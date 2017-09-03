@@ -1,6 +1,6 @@
 /**
  * The MIT License
- * Copyright (c) 2014-2016 Ilkka Seppälä
+ * Copyright (c) 2014 Ilkka Seppälä
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,28 +20,52 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.iluwatar.composite;
+package com.iluwatar.event.sourcing.state;
 
-import java.util.List;
+import com.iluwatar.event.sourcing.domain.Account;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
+ * This is the static accounts map holder class.
+ * This class holds the state of the accounts.
  *
- * Word
- *
+ * Created by Serdar Hamzaogullari on 06.08.2017.
  */
-public class Word extends LetterComposite {
+public class AccountAggregate {
 
-  /**
-   * Constructor
-   */
-  public Word(List<Letter> letters) {
-    for (Letter l : letters) {
-      this.add(l);
-    }
+  private static Map<Integer, Account> accounts = new HashMap<>();
+
+  private AccountAggregate() {
   }
 
-  @Override
-  protected void printThisBefore() {
-    System.out.print(" ");
+  /**
+   * Put account.
+   *
+   * @param account the account
+   */
+  public static void putAccount(Account account) {
+    accounts.put(account.getAccountNo(), account);
+  }
+
+  /**
+   * Gets account.
+   *
+   * @param accountNo the account no
+   * @return the copy of the account or null if not found
+   */
+  public static Account getAccount(int accountNo) {
+    Account account = accounts.get(accountNo);
+    if (account == null) {
+      return null;
+    }
+    return account.copy();
+  }
+
+  /**
+   * Reset state.
+   */
+  public static void resetState() {
+    accounts = new HashMap<>();
   }
 }

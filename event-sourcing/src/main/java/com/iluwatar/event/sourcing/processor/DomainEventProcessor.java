@@ -1,6 +1,6 @@
 /**
  * The MIT License
- * Copyright (c) 2014-2016 Ilkka Seppälä
+ * Copyright (c) 2014 Ilkka Seppälä
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,34 +20,50 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.iluwatar.decorator;
+package com.iluwatar.event.sourcing.processor;
+
+import com.iluwatar.event.sourcing.event.DomainEvent;
 
 /**
- * TrollDecorator is a decorator for {@link Troll} objects. The calls to the {@link Troll} interface
- * are intercepted and decorated. Finally the calls are delegated to the decorated {@link Troll}
- * object.
+ * This is the implementation of event processor.
+ * All events are processed by this class.
+ * This processor uses processorJournal to persist and recover events.
  *
+ * Created by Serdar Hamzaogullari on 06.08.2017.
  */
-public class TrollDecorator implements Troll {
+public class DomainEventProcessor {
 
-  private Troll decorated;
+  private final JsonFileJournal processorJournal = new JsonFileJournal();
 
-  public TrollDecorator(Troll decorated) {
-    this.decorated = decorated;
+  /**
+   * Process.
+   *
+   * @param domainEvent the domain event
+   */
+  public void process(DomainEvent domainEvent) {
+    domainEvent.process();
+    processorJournal.write(domainEvent);
   }
 
-  @Override
-  public void attack() {
-    decorated.attack();
+  /**
+   * Reset.
+   */
+  public void reset() {
+    processorJournal.reset();
   }
 
-  @Override
-  public int getAttackPower() {
-    return decorated.getAttackPower();
-  }
-
-  @Override
-  public void fleeBattle() {
-    decorated.fleeBattle();
+  /**
+   * Recover.
+   */
+  public void recover() {
+    DomainEvent domainEvent;
+    while (true) {
+      domainEvent = processorJournal.readNext();
+      if (domainEvent == null) {
+        break;
+      } else {
+        domainEvent.process();
+      }
+    }
   }
 }
